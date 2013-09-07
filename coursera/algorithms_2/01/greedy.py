@@ -29,7 +29,7 @@ break ties.
 def create_weights_and_lengths_lists():
   jobs = []
   count = 0
-  for line in open('test.txt', 'r'):
+  for line in open('jobs.txt', 'r'):
     if(count > 0 ):
       vals = line.split()
       jobs.append( (int(vals[0]), int(vals[1])) )
@@ -39,8 +39,8 @@ def create_weights_and_lengths_lists():
 
 
 # Sort list of tuples
-def schedule_jobs(jobs, greedy_criterion, hanlde_ties):
-  jobs.sort(key = hanlde_ties)
+def schedule_jobs(jobs, greedy_criterion, handle_ties):
+  jobs.sort(key = handle_ties)
   jobs.sort(key = greedy_criterion)
   return jobs
 
