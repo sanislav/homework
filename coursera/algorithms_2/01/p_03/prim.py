@@ -14,3 +14,22 @@ Your task is to run Prim's minimum spanning tree algorithm on this graph. You
 should report the overall cost of a minimum spanning tree --- an integer,
 which may or may not be negative.'''
 
+# Create a list of tuples (weight, length)
+def create_weights_and_lengths_lists():
+  jobs = []
+  count = 0
+  for line in open('jobs.txt', 'r'):
+    if(count > 0 ):
+      vals = line.split()
+      jobs.append( (int(vals[0]), int(vals[1])) )
+    count += 1
+
+  return jobs
+
+
+def main():
+  # parse the file and create a list of tuples [(w1,l1)...]
+  jobs = create_weights_and_lengths_lists()
+
+if __name__ == '__main__':
+  main()
