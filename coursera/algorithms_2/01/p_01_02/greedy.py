@@ -29,7 +29,7 @@ break ties.
 def create_weights_and_lengths_lists():
   jobs = []
   count = 0
-  for line in open('greedy.txt', 'r'):
+  for line in open('jobs.txt', 'r'):
     if(count > 0):
       vals = line.split()
       jobs.append((int(vals[0]), int(vals[1])))
