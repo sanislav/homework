@@ -1,4 +1,5 @@
-'''In this programming problem and the next you'll code up the clustering
+'''
+In this programming problem and the next you'll code up the clustering
 algorithm from lecture for computing a max-spacing k-clustering. This file
 describes a distance function (equivalently, a complete graph with edge costs).
 It has the following format:
@@ -20,48 +21,69 @@ Shit's too slow. Needs improvement. Takes about 1m:15s
 A: 106
 '''
 
-
 infinity = 10000000
 global nr_nodes
+global nodes_and_leaders
+
+def MakeSet(x):
+  x.parent = x
+  x.rank   = 0
+
+def Union(x, y):
+  xRoot = Find(x)
+  yRoot = Find(y)
+  if xRoot.rank > yRoot.rank:
+    yRoot.parent = xRoot
+  elif xRoot.rank < yRoot.rank:
+    xRoot.parent = yRoot
+  elif xRoot != yRoot: # Unless x and y are already in same set, merge them
+    yRoot.parent = xRoot
+    xRoot.rank = xRoot.rank + 1
+
+def Find(x):
+  if x.parent == x:
+    return x
+  else:
+    x.parent = Find(x.parent)
+  return x.parent
+
+
 
 # Create a list of tuples dict with keys = eges as tuples (node1, node2) and val
 # the weight of the edge
-def represent_edge_weights():
+def represent_edges_and_weights():
   global nr_nodes
-  count = 0
-  graph = {}
-  # for line in open('test.txt', 'r'):
-  for line in open('clustering1.txt', 'r'):
-    vals = line.split()
-    if(count > 0):
-      graph.update({ (int(vals[0]), int(vals[1])) : int(vals[2])})
-      graph.update({ (int(vals[1]), int(vals[0])) : int(vals[2])})
-    else:
-      nr_nodes = int(vals[0])
-    count += 1
+  f = open('test.txt')
 
-  return graph
+  nr_nodes = [int(x) for x in f.readline().split()][0]
+
+  # init the matrix
+  M = [[None for i in xrange(nr_nodes + 1)] for j in xrange(nr_nodes + 1)]
+
+  for line in f:
+    e1, e2, w = line.split()
+    M[int(e1)][int(e2)] = M[int(e2)][int(e1)] = int(w)
+
+  return M
 
 
 # initially each node belongs to it's own cluster. represent clusters as
 # {node: ([leader vertexes])}
 def init_clusters(nr_nodes):
-  clusters = {}
+  global nodes_and_leaders
+  clusters  = {}
+  nodes_and_leaders = {}
+
   for i in xrange(1, nr_nodes + 1):
     clusters.update({i : set([i])})
-
+    # each node points to it's own leader
+    nodes_and_leaders.update({i:i})
   return clusters
-
-
-# given a node return the group it belongs to
-def get_lead_node(clusters, node):
-  for lead, nodes in clusters.iteritems():
-    if node in nodes:
-      return lead
 
 
 # return the cluster leads that have the closest distance between them
 def get_min_distance_clusters(graph, clusters, nr_nodes, group_clusters):
+  global nodes_and_leaders
   closest_clusters = (0,0)
   closest_distance = infinity
   all_nodes = xrange(1, nr_nodes + 1)
@@ -77,12 +99,19 @@ def get_min_distance_clusters(graph, clusters, nr_nodes, group_clusters):
         # compare with nodes from other clusters only
         if other_node not in nodes_in_cluster:
           # get node - other_node weight
+          edge = (0,0)
           if (node, other_node) in graph:
+            edge = (node, other_node)
+          if (other_node, node) in graph:
+            edge = (other_node, node)
+
+          if edge[0] != 0:
             # get weight and retain it if < current smallest one
-            w = graph.get((node, other_node))
+            w = graph.get(edge)
             if w <= closest_distance:
               closest_distance = w
-              closest_clusters = (get_lead_node(clusters, node),get_lead_node(clusters, other_node))
+              # get the 2 lead nodes of the clusters
+              closest_clusters = (edge[0], edge[1])
 
   if ( group_clusters == 1 ):
     return closest_clusters
@@ -92,48 +121,52 @@ def get_min_distance_clusters(graph, clusters, nr_nodes, group_clusters):
 
 # merge cluster a in cluster b. will merge the small one into the larger one
 def merge_clusters(clusters, cluster_a_lead, cluster_b_lead):
+  global nodes_and_leaders
   cluster_a = clusters.get(cluster_a_lead)
   cluster_b = clusters.get(cluster_b_lead)
 
   # move nodes of cluster b into cluster a and delete cluster b
   if len(cluster_a) < len(cluster_b):
-    min_cluster, max_cluster, min_cluster_lead = cluster_a, cluster_b, cluster_a_lead
+    min_cluster, max_cluster, min_cluster_lead, max_cluster_lead = cluster_a, cluster_b, cluster_a_lead, cluster_b_lead
   else:
-    min_cluster, max_cluster, min_cluster_lead = cluster_b, cluster_a, cluster_b_lead
+    min_cluster, max_cluster, min_cluster_lead, max_cluster_lead = cluster_b, cluster_a, cluster_b_lead, cluster_a_lead
 
   for i in min_cluster:
     if i not in max_cluster:
       max_cluster.add(i)
+      # update leaders of i
+      nodes_and_leaders[i] = max_cluster_lead
 
   del(clusters[min_cluster_lead])
-
+  # print nodes_and_leaders
   return clusters
 
 
 def group_clusters(graph, nr_nodes):
-  clusters  = init_clusters(nr_nodes)
-  while len(clusters) > 4:
-    # get min distance between 2 clusters and merge these 2 into 0
-    min_distance_clusters = get_min_distance_clusters(graph, clusters, nr_nodes, 1)
+  print graph
+  clusters  = [MakeSet(node) for node in graph]
+  print clusters
+  # while len(clusters) > 4:
+  #   # get min distance between 2 clusters and merge these 2 into 0
+  #   min_distance_clusters = get_min_distance_clusters(graph, clusters, nr_nodes, 1)
 
-    # merge the 2 clusters into 1. the smaller one gets a leader update
-    clusters = merge_clusters(clusters, min_distance_clusters[0], min_distance_clusters[1])
+  #   # merge the 2 clusters into 1. the smaller one gets a leader update
+  #   clusters = merge_clusters(clusters, min_distance_clusters[0], min_distance_clusters[1])
 
-  return clusters
+  # return clusters
 
 
 def main():
   global nr_nodes
-  # parse the file and create a list of dict with keys = tuples (e1,e2) and
-  # value the weight of the edge
-  graph     = represent_edge_weights()
+  # parse the file and create a matrix like M[v1][v2] = M[v2][v1] = weight of edge v1-v2
+  matrix = represent_edges_and_weights()
 
-  grouped_clusters = group_clusters(graph, nr_nodes)
-  print 'The 4 closest clusters are %s' % grouped_clusters
+  # grouped_clusters = group_clusters(graph, nr_nodes)
+  # print 'The 4 closest clusters are %s' % grouped_clusters
 
-  # get max distance between the 4 clusters
-  furthest_distance = get_min_distance_clusters(graph, grouped_clusters, nr_nodes, 0)
-  print 'The max spacing of the 4 clusters is %d' % furthest_distance
+  # # get max distance between the 4 clusters
+  # furthest_distance = get_min_distance_clusters(graph, grouped_clusters, nr_nodes, 0)
+  # print 'The max spacing of the 4 clusters is %d' % furthest_distance
 
 
 if __name__ == '__main__':
