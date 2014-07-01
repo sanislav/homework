@@ -14,7 +14,7 @@ British usage.
 
 digits = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 ten_ninteen = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
-tens = ['ten', 'twenty', 'thirty', 'fourty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+tens = ['ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
 hundreds = [digit+' hundred' for digit in digits]
 thousands = [digit+' thousand' for digit in digits]
 
@@ -48,7 +48,9 @@ def get_number_word(num):
 def count_letters(max):
     num_letters = 0
     for num in xrange(1,max+1):
-        num_letters += len(get_number_word(num))
+        # print get_number_word(num).replace(' ','')
+        # print len(get_number_word(num).replace(' ',''))
+        num_letters += len(get_number_word(num).replace(' ',''))
 
     return num_letters
 
