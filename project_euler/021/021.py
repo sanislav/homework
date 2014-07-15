@@ -15,15 +15,11 @@ from math import sqrt
 
 # generate proper divisors 
 def number_factors(n):
-    large_divisors = []
     for i in xrange(1, int(sqrt(n) + 1)):
         if n % i is 0:
             yield i
             if i is not n / i and i is not 1:
-                large_divisors.insert(0, n / i)
-
-    for divisor in large_divisors:
-        yield divisor
+                yield n / i
 
 amicable = []
 for a in xrange(2,10001):
@@ -35,5 +31,4 @@ for a in xrange(2,10001):
             amicable.append(a)
             amicable.append(d_a)
 
-print amicable
 print sum(amicable)
