@@ -33,6 +33,7 @@ if __name__ == "__main__":
         i for i in xrange(12, 28124) if sum(list(number_factors(i))) > i]
 
     # keep sums in a hash table so that lookups are O(1)
-    abundant_sums = {i + j: '' for i in abundant_numbers for j in abundant_numbers}
+    abundant_sums = {i + j: ''
+                     for i in abundant_numbers for j in abundant_numbers}
 
     print sum(i for i in xrange(1, 28124) if i not in abundant_sums)
